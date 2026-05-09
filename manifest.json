@@ -1,0 +1,37 @@
+{
+  "manifest_version": 2,
+  "name": "webBlocker",
+  "version": "1.0",
+
+  "description": "Permet de gérer son temps d'écran sur certains sites web pour gagner en concentration et en productivité",
+  "homepage_url": "https://github.com/natha2007/webBlocker",
+  "icons": {
+    "32": "icons/beasts-32-light.png"
+  },
+
+"permissions": [
+    "activeTab",
+    "<all_urls>",
+    "tabs",
+    "storage"
+],
+
+"content_scripts": [
+    {
+        "matches": ["<all_urls>"],
+        "js": ["content_scripts/beastify.js"]
+    }
+],
+
+  "browser_action": {
+    "default_icon": "icons/beasts-32-light.png",
+    "default_title": "webBlocker",
+    "default_popup": "popup/choose_beast.html"
+  },
+
+  "web_accessible_resources": [
+    "beasts/frog.jpg",
+    "beasts/turtle.jpg",
+    "beasts/snake.jpg"
+  ]
+}
