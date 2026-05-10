@@ -4,21 +4,23 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Popup chargée et script actif");
 
     const form = document.getElementById("form-url-id");
-    const btnBeast1 = document.getElementById("btn-beast-1");
+    const btnHome1 = document.getElementById("btn-home-1");
     const firstButtonDiv = document.getElementById("firstButton");
     const buttonBloquer = document.getElementById("btn-bloquer");
     const EnableDisableBtn = document.getElementById("btn-enable-disable");
 
+    /*
     // Sécurité : on cache au démarrage
     if (firstButtonDiv) firstButtonDiv.style.display = "none";
 
     // Gestion de l'affichage du formulaire
-    if (btnBeast1) {
-        btnBeast1.addEventListener("click", () => {
+    if (btnHome1) {
+        btnHome1.addEventListener("click", () => {
             console.log("Clic sur bouton 1");
             showPopUp();
         });
     }
+        */
 
     // Gestion du bouton Activer/Désactiver
     let count = 0
@@ -79,12 +81,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 
+/*
 function showPopUp(){
     let hiddenButtons = document.getElementsByClassName("hidden-1");
-    let visibleButtons = document.getElementsByClassName("button beast");
+    let visibleButtons = document.getElementsByClassName("button home");
     for (let hidden of hiddenButtons) { hidden.style.display = "block"; }
     for (let visible of visibleButtons) { visible.style.display = "none"; }
 }
+    */
 
 function hideUrls(){
     let hiddenButtons = document.getElementsByClassName("hidden-2");
@@ -98,5 +102,5 @@ function showUrls(){
 
 // injection du script doit pas bloquer le reste
 browser.tabs
-  .executeScript({ file: "/content_scripts/beastify.js" })
+  .executeScript({ file: "/content_scripts/block.js" })
   .catch(err => console.warn("Script de contenu non injecté (normal sur pages système) :", err.message));
