@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const EnableDisableBtn = document.getElementById("btn-enable-disable");
     
 
-    //Gestion conservation session popup
+    // Popup session management
     document.querySelectorAll('.page').forEach(p => p.style.display = "none");
     document.getElementById('starting-page').style.display = "block";
 
