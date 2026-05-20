@@ -1,4 +1,4 @@
-// On attend que le DOM soit totalement chargé
+// Waiting for DOMContent to be fully loaded
 document.addEventListener("DOMContentLoaded", () => {
     
     //console.log("Loaded popup and active script");
