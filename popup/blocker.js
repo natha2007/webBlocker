@@ -1,31 +1,22 @@
-// Waiting for DOMContent to be fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-    
-    //console.log("Loaded popup and active script");
+/**
+ * Initialise the URL blocker part of the popup
+ */
+export function initBlocker(){
+    showHideUrlListUI();
+    EnableDisableUrlBlocking();
+    blockUrl();
+    deleteUrl();
 
-    const form = document.getElementById("form-url-id"); // Url submission form 
-    const EnableDisableBtn = document.getElementById("btn-enable-disable");
-    
+    // script injection 
+    browser.tabs
+    .executeScript({ file: "/content_scripts/block.js" })
+    .catch(err => console.warn("Script de contenu non injecté (normal sur pages système) :", err.message));
+}
 
-    // Popup session management
-    document.querySelectorAll('.page').forEach(p => p.style.display = "none");
-    document.getElementById('starting-page').style.display = "block";
-
-    document.querySelectorAll("button[data-target]").forEach(btn => {
-        const target = btn.getAttribute("data-target");
-        btn.addEventListener("click", () => {
-            showPage(target);
-        })
-    })
-
-    browser.storage.local.get("lastActivePage").then((lp) => {
-        if (lp.lastActivePage){
-            showPage(lp.lastActivePage);
-        }
-    })
-    
-
-    // Enable/Disable button managing
+/**
+ * Hide or show the Url list on UI depending if it is enabled/disabled
+ */
+function showHideUrlListUI(){
     browser.storage.local.get("visibleUrl").then((data) => {
         let visible = data.visibleUrl;
         if (visible){
@@ -34,7 +25,13 @@ document.addEventListener("DOMContentLoaded", () => {
             hideUrls();
         }
     });
+}
 
+/**
+ * Manage the button that allows the user to enable or disable the restrictions he added
+ */
+function EnableDisableUrlBlocking(){
+    const EnableDisableBtn = document.getElementById("btn-enable-disable");
     EnableDisableBtn.addEventListener("click", () => {
         browser.storage.local.get("visibleUrl").then((data) => {
             let visible = data.visibleUrl;
@@ -56,9 +53,14 @@ document.addEventListener("DOMContentLoaded", () => {
             })
         });
     });
+}
 
-    
-    // Block (url) button (form submission managing)
+/**
+ * When the block button is clicked (then submitted), the URL that has been written is added to the
+ * blocked URLs list and displayed on the UI
+ */
+function blockUrl(){
+    const form = document.getElementById("form-url-id"); // Url submission form 
     if (form) {
         form.addEventListener("submit", (e) => {
             e.preventDefault();
@@ -96,8 +98,14 @@ document.addEventListener("DOMContentLoaded", () => {
     } else {
         console.error("ERROR : The 'form-url-id' form doesn't exist in the HTML");
     }
+}
 
-    // show/hide blocked URLs
+
+/**
+ * When the delete button of an URL is clicked, the URL will be removed from the list of the blocked URLs
+ * and will be removed from the UI
+ */
+function deleteUrl(){
     const ul = document.getElementById("blocked-urls-list");
     ul.addEventListener('click', (e)=>{
         const deleteBtn = e.target.closest(".supp-btn");
@@ -122,9 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
+}
 
-
-});
 
 /**
  * Take a list (of urls) and a HTML ul element and proceed to display all urlList elements
@@ -172,23 +179,3 @@ function showUrls(){
     });
 }
 
-/**
- * this allows the user to switch page with the buttons by hiding other page containers
- * and by showing choosed container id
- * @param {*} pageId HTML id of the container 
- */
-function showPage(pageId){
-    // hide all pages
-    document.querySelectorAll(".page").forEach(page => page.style.display = "none");
-
-    // display wanted page
-    document.getElementById(pageId).style.display = "block";
-
-    // Put in storage as last displayed page
-    browser.storage.local.set({ lastActivePage : pageId});
-}
-
-// script injection 
-browser.tabs
-  .executeScript({ file: "/content_scripts/block.js" })
-  .catch(err => console.warn("Script de contenu non injecté (normal sur pages système) :", err.message));
