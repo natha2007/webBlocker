@@ -9,38 +9,37 @@
   <body>
 
     <nav class="always-displayed">
-      <h1> Bloqueur Web </h1>
-      <button data-target="home">Accueil</button>
-      <button data-target="settings">Réglages</button>
+      <h1> Web blocker </h1>
+      <button data-target="home">Home</button>
+      <button data-target="settings">Settings</button>
     </nav>
 
     <div class="page" id="starting-page">
       <h1> Starting page </h1>
-      <p> Test text </p>
       <button class="start-btn" type="button" data-target="home"> Start </button>
     </div>
     
     <div class="page" id="home">
         <div class="button home" id="btn-home-1"> 
           <button class="btn-bloquer" type="button" data-target="block-menu">
-            Bloquer un site web précis 
+            Block a specific website 
           </button>
         </div>
         <div class="button home"> 
           <button class="" type="button">
-            Fonctionnalités de blocage
+            blocking functionalities 
           </button>
         </div>
         <div class="button home">
             <button class="" type="button">
-              Version premium
+              Premium version
             </button>
         </div>
     </div>
 
     <div class="page" id="block-menu">
-      <h1> Rentrez l'url du site que vous voulez bloquer </h1>
-      <button id="btn-enable-disable"> Activer/Désactiver </button>
+      <h1> Enter website URL that you want to block </h1>
+      <button id="btn-enable-disable"> Enable/Disable </button>
       <div class="hidden-2">
           <form class="form-url" id="form-url-id">
               <div class="form-url">
@@ -48,18 +47,18 @@
                   <input type="text" name="url" id="url-input" required />
               </div>
               <div class="form-url">
-                  <input type="submit" id="btn-bloquer" value="Bloquer"/>
+                  <input type="submit" id="btn-bloquer" value="Block"/>
               </div>
           </form>
-          <h2> Urls bloquées : </h2>
+          <h2> Blocked URLs : </h2>
           <ul id="blocked-urls-list">
           </ul>
       </div>
     </div>
     
     <div id="error-content" class="hidden">
-      <p>Cette page ne peut être transformée.</p>
-      <p>Veuillez essayer une autre page.</p>
+      <p>That page cannot be transformed</p>
+      <p>Try another page</p>
     </div>
 
     

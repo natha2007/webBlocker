@@ -1,12 +1,9 @@
 // On attend que le DOM soit totalement chargé
 document.addEventListener("DOMContentLoaded", () => {
     
-    console.log("Popup chargée et script actif");
+    //console.log("Loaded popup and active script");
 
-    const form = document.getElementById("form-url-id");
-    const btnHome1 = document.getElementById("btn-home-1");
-    const firstButtonDiv = document.getElementById("firstButton");
-    const buttonBloquer = document.getElementById("btn-bloquer");
+    const form = document.getElementById("form-url-id"); // Url submission form 
     const EnableDisableBtn = document.getElementById("btn-enable-disable");
     
 
@@ -27,10 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     })
     
-    // Gestion du bouton Activer/Désactiver
-    
-    browser.storage.local.get("visibleUrls").then((data) => {
-        let visible = data.visibleUrls;
+
+    // Enable/Disable button managing
+    browser.storage.local.get("visibleUrl").then((data) => {
+        let visible = data.visibleUrl;
         if (visible){
             showUrls();
         } else {
@@ -38,107 +35,84 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
-    
     EnableDisableBtn.addEventListener("click", () => {
-        
-        // à résoudre :
-        // faire en sorte de pouvoir enregistrer la liste avant de la mettre à vide 
-
-        
-
-        browser.storage.local.get("visibleUrls").then((data) => {
-            let visible = data.visibleUrls;
-            console.log("visible : ", visible);
-            browser.storage.local.get("lastUrlsList").then((data) => {
-                console.log("urls bloquées", data.lastUrlsList);
-                const lastUrlsList = data.lastUrlsList;
+        browser.storage.local.get("visibleUrl").then((data) => {
+            let visible = data.visibleUrl;
+            //console.log("visible : ", visible);
+            browser.storage.local.get("blockedUrls").then((data) => {
+                //console.log("urls bloquées", data.blockedUrls);
+                const lastUrlsList = data.blockedUrls;
                 if (visible) {
-                    console.log("Extension désactivée");
+                    //console.log("Extension désactivée");
                     hideUrls();
-                    browser.storage.local.set({ blockedUrls: [], visibleUrls : false });
+                    browser.storage.local.set({visibleUrl : false });
                     browser.tabs.reload();
                 } else {
-                    console.log("Extension activée");
+                    //console.log("Extension activée");
                     showUrls();
-                    browser.storage.local.set({ blockedUrls: lastUrlsList, visibleUrls : true });
+                    browser.storage.local.set({visibleUrl : true });
                     browser.tabs.reload();
                 }
             })
         });
-
-        
-
-        
     });
 
     
-    // GESTION DU SUBMIT (Le coeur du problème)
+    // Block (url) button (form submission managing)
     if (form) {
         form.addEventListener("submit", (e) => {
             e.preventDefault();
-            const urlCible = document.getElementById("url-input").value.trim().toLowerCase();
+            const targetUrl = document.getElementById("url-input").value.trim().toLowerCase();
 
-            
+            if (!targetUrl) return;
 
-            if (!urlCible) return;
-
-            // Récupérer liste actuelle (tableau vide par défaut)
+            // Retrieve current list (empty by default)
             browser.storage.local.get({ blockedUrls: [] }).then((data) => {
-                const listeAjour = data.blockedUrls;
+                const updatedList = data.blockedUrls;
+                browser.storage.local.get("visibleUrl").then((data)=>{
+                    let visible = data.visibleUrl;
+                    if (visible){
 
-                // Ajouter URL si pas déjà dans la liste
-                if (!listeAjour.includes(urlCible)) {
-                    listeAjour.push(urlCible);
-                }
-
-                
-                // Sauvegarder  nouvelle liste
-                return browser.storage.local.set({ blockedUrls: listeAjour, lastUrlsList : listeAjour }).then(() => {
-
-                    // Ajouter dans la liste des URls bloquées celle qu'on vient d'ajouter
-                    const listElements = document.getElementById("blocked-urls-list");
-                    console.log(listElements);
-                    listElements.innerHTML = "";
-                    listeAjour.forEach(url => {
-                        const li = document.createElement("li");
-                        li.textContent = url; // Plus sécurisé que innerHTML
-                        li.className = "blocked-urls-li";
-                        li.id = "li" + url.replace(/[^a-z0-9]/gi, '-');
-                        listElements.appendChild(li);
-                        const suppBtn = document.createElement("button");
-                        suppBtn.textContent = "Supprimer";
-                        suppBtn.type = "button";
-                        suppBtn.className = "supp-btn";
-                        li.appendChild(suppBtn);
-                    });
+                        // Add url to list if not yet
+                        if (!updatedList.includes(targetUrl)) {
+                            updatedList.push(targetUrl);
+                        }
+                        
+                        // Save new list
+                        return browser.storage.local.set({ blockedUrls: updatedList }).then(() => {
+                            // Add element to UI list
+                            const listElements = document.getElementById("blocked-urls-list");
+                            //console.log(listElements);
+                            listElements.innerHTML = "";
+                            showBlockedUrls(updatedList, listElements);
+                        });
+                    }
                 });
-
-
             }).then(() => {
-                console.log("Liste mise à jour");
-                browser.tabs.reload(); // Rafraîchir pour appliquer
+                //console.log("List updated !");
+                browser.tabs.reload(); // Refresh to apply
             });
         });
     } else {
-        console.error("ERREUR : Le formulaire 'form-url-id' n'existe pas dans le HTML");
+        console.error("ERROR : The 'form-url-id' form doesn't exist in the HTML");
     }
 
+    // show/hide blocked URLs
     const ul = document.getElementById("blocked-urls-list");
     ul.addEventListener('click', (e)=>{
-        const suppButton = e.target.closest(".supp-btn");
-        const suppLi = e.target.closest(".blocked-urls-li");
-        console.log(suppLi.textContent);
-        if (suppButton && suppLi){
-            const idBtnASupp = suppButton.id;
-            const idLiASupp = suppLi.id;
-            browser.storage.local.get("lastUrlsList").then((data)=>{
-                let listeAjour = data.lastUrlsList || [];
-                console.log("liste à jour : ", listeAjour);
-                listeAjour = listeAjour.filter(url => "li" + url.replace(/[^a-z0-9]/gi, '-') !== idLiASupp);
-                console.log("liste à jour après modif: ", listeAjour);
-                browser.storage.local.set({ lastUrlsList: listeAjour, blockedUrls : listeAjour}).then(() => {
-                    const elementLi = document.getElementById(idLiASupp);
+        const deleteBtn = e.target.closest(".supp-btn");
+        const deleteLi = e.target.closest(".blocked-urls-li");
+        //console.log(deleteLi.textContent);
+        if (deleteBtn && deleteLi){
+            const btnId = deleteBtn.id;
+            const idLi = deleteLi.id;
+            browser.storage.local.get("blockedUrls").then((data)=>{
+                let updatedList = data.blockedUrls || [];
+                //console.log("Updated list : ", updatedList);
+                updatedList = updatedList.filter(url => "li" + url.replace(/[^a-z0-9]/gi, '-') !== idLi);
+                //console.log("updated list after filtering ", updatedList);
+                browser.storage.local.set({blockedUrls : updatedList}).then(() => {
+                    const elementLi = document.getElementById(idLi);
                         if (elementLi) {
                             elementLi.remove(); 
                         }
@@ -149,62 +123,72 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-        
-        
-       
+
 });
 
+/**
+ * Take a list (of urls) and a HTML ul element and proceed to display all urlList elements
+ * onto the screen by transforming each URL into a li element with a delete button that is added 
+ * to the ul element.
+ * @param {*} urlList list of urls 
+ * @param {*} listElements ul HTML element
+ */
+function showBlockedUrls(urlList, listElements){
+    urlList.forEach(url => {
+        const li = document.createElement("li");
+        li.textContent = url; 
+        li.className = "blocked-urls-li";
+        li.id = "li" + url.replace(/[^a-z0-9]/gi, '-');
+        listElements.appendChild(li);
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete";
+        deleteBtn.type = "button";
+        deleteBtn.className = "supp-btn";
+        li.appendChild(deleteBtn);
+    });
+}
 
+/**
+ * Hide all Url blocking management part
+ */
 function hideUrls(){
     let hiddenButtons = document.getElementsByClassName("hidden-2");
     for (let hidden of hiddenButtons) { hidden.style.display = "none"; }
 }
 
+/**
+ * Show all Url blocking management part (Also the blocked URLs list)
+ */
 function showUrls(){
     let hiddenButtons = document.getElementsByClassName("hidden-2");
     for (let hidden of hiddenButtons) { hidden.style.display = "block"; }
-    // Réafficher les sites bloqués
-    browser.storage.local.get("lastUrlsList").then((data)=>{
-        const listeAjour = data.lastUrlsList;
+    // show blocked websites
+    browser.storage.local.get("blockedUrls").then((data)=>{
+        const updatedList = data.blockedUrls;
         const listElements = document.getElementById("blocked-urls-list");
-        console.log(listElements);
+        //console.log(listElements);
         listElements.innerHTML = "";
-        listeAjour.forEach(url => {
-            const li = document.createElement("li");
-            li.textContent = url; // Plus sécurisé que innerHTML
-            li.className = "blocked-urls-li";
-            li.id = "li" + url.replace(/[^a-z0-9]/gi, '-');
-            listElements.appendChild(li);
-            const suppBtn = document.createElement("button");
-            suppBtn.textContent = "Supprimer";
-            suppBtn.type = "button";
-            suppBtn.className = "supp-btn";
-            li.appendChild(suppBtn);
-        });
+        showBlockedUrls(updatedList, listElements);
     });
 }
 
-
-function onGot(item) {
-  console.log(item);
-}
-
-function onError(error) {
-  console.log(`Error: ${error}`);
-}
-
+/**
+ * this allows the user to switch page with the buttons by hiding other page containers
+ * and by showing choosed container id
+ * @param {*} pageId HTML id of the container 
+ */
 function showPage(pageId){
-    //cacher toutes les pages
+    // hide all pages
     document.querySelectorAll(".page").forEach(page => page.style.display = "none");
 
-    //afficher la page voulue
+    // display wanted page
     document.getElementById(pageId).style.display = "block";
 
-    //Mettre dans le storage en tant que dernière page affichée
+    // Put in storage as last displayed page
     browser.storage.local.set({ lastActivePage : pageId});
 }
 
-// injection du script doit pas bloquer le reste
+// script injection 
 browser.tabs
   .executeScript({ file: "/content_scripts/block.js" })
   .catch(err => console.warn("Script de contenu non injecté (normal sur pages système) :", err.message));

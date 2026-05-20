@@ -4,8 +4,6 @@ browser.runtime.onInstalled.addListener(() => {
     blockedUrls: [],
     lastActivePage : 'home',
     visibleUrl : true,
-    lastUrlsList : [],
-    isEnabled : true,
   });
-  console.log("Stockage initialisé !");
+  console.log("Initialised storage !");
 });
